@@ -2,9 +2,12 @@ use crate::rpc::{BabeDeps, BeefyDeps, FullDeps, GrandpaDeps, IoHandlerRpcExtensi
 
 use std::{sync::Arc, time::Duration};
 
+use sc_consensus_manual_seal::InstantSealParams;
 use sp_authorship::InherentDataProvider as AuthorshipInherentDataProvider;
 use sp_consensus::CanAuthorWithNativeVersion;
-use sp_consensus_babe::inherents::InherentDataProvider as BabeInherentDataProvider;
+use sp_consensus_babe::{
+	inherents::InherentDataProvider as BabeInherentDataProvider, runtime_decl_for_BabeApi::BabeApi,
+};
 use sp_runtime::traits::Block as BlockT;
 use sp_timestamp::InherentDataProvider;
 use sp_transaction_storage_proof::registration;
@@ -167,30 +170,11 @@ pub fn new_partial(
 
 	let slot_duration = babe_link.config().slot_duration();
 
-	let import_queue = sc_consensus_babe::import_queue(
-		babe_link.clone(),
-		block_import.clone(),
-		Some(Box::new(justification_import)),
-		client.clone(),
-		select_chain.clone(),
-		move |_, ()| async move {
-			let timestamp = InherentDataProvider::from_system_time();
-
-			let slot = BabeInherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
-			);
-
-			let uncles =
-				AuthorshipInherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
-
-			Ok((timestamp, slot, uncles))
-		},
+	let import_queue = sc_consensus_manual_seal::import_queue(
+		Box::new(client.clone()),
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
-		CanAuthorWithNativeVersion::new(client.executor().clone()),
-		telemetry.as_ref().map(|x| x.handle()),
-	)?;
+	);
 
 	let (beefy_commitment_link, beefy_commitment_stream) =
 		BeefySignedCommitmentStream::<Block>::channel();
@@ -333,7 +317,7 @@ pub fn new_full_base(
 	let name = config.network.node_name.clone();
 	let role = config.role.clone();
 	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks = Some(BackoffAuthoringOnFinalizedHeadLagging::default());
+	// let backoff_authoring_blocks = Some(BackoffAuthoringOnFinalizedHeadLagging::default());
 	let enable_grandpa = !config.disable_grandpa;
 	let prometheus_registry = config.prometheus_registry().cloned();
 
@@ -366,14 +350,21 @@ pub fn new_full_base(
 		let client_clone = client.clone();
 		let slot_duration = babe_link.config().slot_duration();
 
-		let babe_params = BabeParams {
-			keystore: keystore_container.sync_keystore(),
-			client: client.clone(),
-			select_chain,
-			env: proposer,
+		let instant_seal_params = InstantSealParams {
 			block_import,
-			sync_oracle: network.clone(),
-			justification_sync_link: network.clone(),
+			env: proposer,
+			client: client.clone(),
+			pool: transaction_pool.clone(),
+			select_chain,
+			consensus_data_provider: Some(Box::new(
+				sc_consensus_manual_seal::consensus::babe::BabeConsensusDataProvider::new(
+					client.clone(),
+					keystore_container.sync_keystore(),
+					babe_link.epoch_changes().clone(),
+					babe_link.config().genesis_config().genesis_authorities.clone(),
+				)
+				.unwrap(),
+			)),
 			create_inherent_data_providers: move |parent, ()| {
 				let client_clone = client_clone.clone();
 				async move {
@@ -394,20 +385,13 @@ pub fn new_full_base(
 					Ok((timestamp, slot, uncles, storage_proof))
 				}
 			},
-			force_authoring,
-			backoff_authoring_blocks,
-			babe_link,
-			can_author_with,
-			block_proposal_slot_portion: SlotProportion::new(0.5),
-			max_block_proposal_slot_portion: None,
-			telemetry: telemetry.as_ref().map(|x| x.handle()),
 		};
 
-		let babe = sc_consensus_babe::start_babe(babe_params)?;
+		let instant_seal = sc_consensus_manual_seal::run_instant_seal(instant_seal_params);
 
 		task_manager
 			.spawn_essential_handle()
-			.spawn_blocking("babe-proposer", None, babe);
+			.spawn_blocking("instant-seal", None, instant_seal);
 	}
 
 	// if the node isn't actively participating in consensus then it doesn't
