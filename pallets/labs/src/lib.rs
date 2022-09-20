@@ -1,7 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub use scale_info::TypeInfo;
-
 pub mod interface;
 pub mod migrations;
 pub mod weights;
@@ -10,6 +8,7 @@ pub mod weights;
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 pub use pallet::*;
+pub use scale_info::TypeInfo;
 pub use weights::WeightInfo;
 
 pub use crate::interface::LabInterface;
@@ -32,6 +31,7 @@ use traits_user_profile::UserProfileProvider;
 
 // LabInfo Struct
 // Used as parameter of dispatchable calls
+// Until update Rust compiler, clippy will have false positives: https://github.com/rust-lang/rust-clippy/issues/8867
 #[derive(Encode, Decode, Clone, Default, RuntimeDebug, PartialEq, Eq, TypeInfo)]
 pub struct LabInfo<Hash>
 where
@@ -156,7 +156,7 @@ where
 }
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(2);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(3);
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -200,6 +200,7 @@ pub mod pallet {
 		type UserProfile: UserProfileProvider<Self, Self::EthereumAddress, Self::ProfileRoles>;
 		type LabWeightInfo: WeightInfo;
 		/// Currency type for this pallet.
+		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
 
@@ -445,7 +446,7 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			// Check if user is a lab
 			let lab = Self::lab_by_account_id(&who);
-			if lab == None {
+			if lab.is_none() {
 				return Err(Error::<T>::LabDoesNotExist.into())
 			}
 
@@ -596,7 +597,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 		lab_info: &Self::LabInfo,
 	) -> Result<Self::Lab, Self::Error> {
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 		let mut lab = lab.unwrap();
@@ -638,7 +639,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 		}
 
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 		let mut lab = lab.unwrap();
@@ -649,7 +650,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 
 	fn delete_lab(account_id: &T::AccountId) -> Result<Self::Lab, Self::Error> {
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 		let lab = lab.unwrap();
@@ -671,7 +672,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 
 	fn stake_lab(account_id: &T::AccountId) -> Result<Self::Lab, Self::Error> {
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 
@@ -720,7 +721,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 
 	fn unstake_lab(account_id: &T::AccountId) -> Result<Self::Lab, Self::Error> {
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 
@@ -752,7 +753,7 @@ impl<T: Config> LabInterface<T> for Pallet<T> {
 		}
 
 		let lab = Labs::<T>::get(account_id);
-		if lab == None {
+		if lab.is_none() {
 			return Err(Error::<T>::LabDoesNotExist)
 		}
 

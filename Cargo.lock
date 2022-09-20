@@ -1353,7 +1353,7 @@ dependencies = [
 
 [[package]]
 name = "debio"
-version = "2.1.4"
+version = "2.1.5"
 dependencies = [
  "beefy-gadget",
  "beefy-gadget-rpc",
@@ -1368,7 +1368,6 @@ dependencies = [
  "pallet-im-online",
  "pallet-mmr-rpc",
  "pallet-octopus-appchain",
- "pallet-octopus-lpos",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
@@ -1415,7 +1414,7 @@ dependencies = [
 
 [[package]]
 name = "debio-runtime"
-version = "2.1.4"
+version = "2.1.5"
 dependencies = [
  "beefy-primitives",
  "certifications",
@@ -1450,6 +1449,8 @@ dependencies = [
  "labs",
  "labs-benchmarking",
  "log",
+ "menstrual-calendar",
+ "menstrual-subscription",
  "orders",
  "orders-benchmarking",
  "pallet-assets",
@@ -1465,6 +1466,7 @@ dependencies = [
  "pallet-octopus-appchain",
  "pallet-octopus-lpos",
  "pallet-octopus-upward-messages",
+ "pallet-offences",
  "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",
@@ -2411,6 +2413,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2446,6 +2449,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2485,6 +2489,7 @@ dependencies = [
  "genetic-analysts",
  "genetic-data",
  "hex-literal",
+ "pallet-assets",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -2518,6 +2523,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2592,6 +2598,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2665,6 +2672,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2692,6 +2700,7 @@ dependencies = [
  "frame-system",
  "genetic-analyst-qualifications",
  "genetic-analyst-services",
+ "pallet-assets",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -2725,6 +2734,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -2761,6 +2771,7 @@ dependencies = [
  "genetic-analyst-services",
  "genetic-analysts",
  "genetic-data",
+ "pallet-assets",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-timestamp",
@@ -4578,6 +4589,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 
 [[package]]
+name = "menstrual-calendar"
+version = "2.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "traits-menstrual-calendar",
+]
+
+[[package]]
+name = "menstrual-subscription"
+version = "2.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "primitives-duration",
+ "primitives-menstrual-status",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "traits-menstrual-subscription",
+]
+
+[[package]]
 name = "merlin"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5275,7 +5324,7 @@ dependencies = [
 [[package]]
 name = "pallet-octopus-appchain"
 version = "4.0.0-pre.0"
-source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18#929324c1c53d4353bbd89aa04e114c50a4f291fd"
+source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18-2#bd323368e679c41b2ed3eb0ee1f8eb374aa0955c"
 dependencies = [
  "base64",
  "borsh",
@@ -5300,7 +5349,7 @@ dependencies = [
 [[package]]
 name = "pallet-octopus-lpos"
 version = "4.0.0-pre.0"
-source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18#929324c1c53d4353bbd89aa04e114c50a4f291fd"
+source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18-2#bd323368e679c41b2ed3eb0ee1f8eb374aa0955c"
 dependencies = [
  "borsh",
  "frame-benchmarking",
@@ -5322,7 +5371,7 @@ dependencies = [
 [[package]]
 name = "pallet-octopus-support"
 version = "4.0.0-pre.0"
-source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18#929324c1c53d4353bbd89aa04e114c50a4f291fd"
+source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18-2#bd323368e679c41b2ed3eb0ee1f8eb374aa0955c"
 dependencies = [
  "borsh",
  "frame-support",
@@ -5335,7 +5384,7 @@ dependencies = [
 [[package]]
 name = "pallet-octopus-upward-messages"
 version = "4.0.0-pre.0"
-source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18#929324c1c53d4353bbd89aa04e114c50a4f291fd"
+source = "git+https://github.com/octopus-network/octopus-pallets.git?branch=release-v0.9.18-2#bd323368e679c41b2ed3eb0ee1f8eb374aa0955c"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5347,6 +5396,23 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.18#fc3fd073d3a0acf9933c3994b660ebd7b5833f65"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-staking",
  "sp-std",
 ]
 
@@ -5922,6 +5988,15 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-std",
+]
+
+[[package]]
+name = "primitives-menstrual-status"
+version = "2.1.0"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
 ]
 
 [[package]]
@@ -9354,6 +9429,28 @@ dependencies = [
  "parity-scale-codec",
  "primitives-verification-status",
  "scale-info",
+]
+
+[[package]]
+name = "traits-menstrual-calendar"
+version = "2.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-std",
+]
+
+[[package]]
+name = "traits-menstrual-subscription"
+version = "2.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-std",
 ]
 
 [[package]]

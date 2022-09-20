@@ -142,7 +142,7 @@ where
 }
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(2);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(3);
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -192,6 +192,7 @@ pub mod pallet {
 		type UserProfile: UserProfileProvider<Self, Self::EthereumAddress, Self::ProfileRoles>;
 		type GeneticAnalystWeightInfo: WeightInfo;
 		/// Currency type for this pallet.
+		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
 
@@ -414,7 +415,7 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			// Check if user is a genetic_analyst
 			let genetic_analyst = Self::genetic_analyst_by_account_id(&who);
-			if genetic_analyst == None {
+			if genetic_analyst.is_none() {
 				return Err(Error::<T>::GeneticAnalystDoesNotExist.into())
 			}
 
@@ -622,7 +623,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		genetic_analyst_info: &Self::GeneticAnalystInfo,
 	) -> Result<Self::GeneticAnalyst, Self::Error> {
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 		let mut genetic_analyst = genetic_analyst.unwrap();
@@ -644,7 +645,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		}
 
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 
@@ -703,7 +704,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		status: &Self::AvailabilityStatus,
 	) -> Result<Self::GeneticAnalyst, Self::Error> {
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 
@@ -726,7 +727,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		account_id: &T::AccountId,
 	) -> Result<Self::GeneticAnalyst, Self::Error> {
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 
@@ -777,7 +778,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		account_id: &T::AccountId,
 	) -> Result<Self::GeneticAnalyst, Self::Error> {
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 
@@ -810,7 +811,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		}
 
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 
@@ -863,7 +864,7 @@ impl<T: Config> GeneticAnalystInterface<T> for Pallet<T> {
 		account_id: &T::AccountId,
 	) -> Result<Self::GeneticAnalyst, Self::Error> {
 		let genetic_analyst = GeneticAnalysts::<T>::get(account_id);
-		if genetic_analyst == None {
+		if genetic_analyst.is_none() {
 			return Err(Error::<T>::GeneticAnalystDoesNotExist)
 		}
 		let genetic_analyst = genetic_analyst.unwrap();

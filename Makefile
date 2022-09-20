@@ -4,6 +4,8 @@ init:
 
 .PHONY: check
 check:
+	cargo +nightly fmt
+	cargo +nightly clippy
 	SKIP_WASM_BUILD=1 cargo check --release
 
 .PHONY: test
@@ -19,14 +21,17 @@ run:
 build-benchmark:
 	cargo build --release --features runtime-benchmarks
 
+.PHONY: benchmark
+benchmark:
+	.maintain/run-benchmark-locally-build-once.sh
+
 .PHONY: build
 build:
 	cargo build --release
 
-.PHONY: clean
-clean:
+.PHONY: format
+format:
 	cargo +nightly fmt
-	cargo +nightly clippy
 
 .PHONY: prepush
 prepush:

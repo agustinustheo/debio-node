@@ -2,6 +2,7 @@ use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
 use crate::{AdminKey, ProfileRolesOf};
+use primitives_profile_roles::ProfileRolesTrait;
 
 #[test]
 fn set_eth_address_works() {
@@ -82,6 +83,24 @@ fn update_admin_key_works() {
 		assert_ok!(UserProfile::update_admin_key(Origin::signed(2), 1,));
 
 		assert_eq!(UserProfile::admin_key(), Some(1));
+	})
+}
+
+#[test]
+fn admin_update_profile_roles_works() {
+	ExternalityBuilder::build().execute_with(|| {
+		let mut roles = ProfileRolesOf::<Test>::default();
+		roles.set_is_customer(true);
+
+		AdminKey::<Test>::put(2);
+
+		assert_eq!(UserProfile::admin_key(), Some(2));
+
+		System::set_block_number(1);
+
+		assert_ok!(UserProfile::admin_update_profile_roles(Origin::signed(2), 2, roles.clone()));
+
+		System::assert_last_event(Event::UserProfile(crate::Event::AdminSetProfileRoles(2, roles)));
 	})
 }
 

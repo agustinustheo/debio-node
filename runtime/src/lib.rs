@@ -52,7 +52,7 @@ use pallet_grandpa::{
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_mmr_primitives as mmr;
 use pallet_octopus_appchain::sr25519::AuthorityId as OctopusId;
-use pallet_octopus_lpos::{EraIndex, ExposureOf};
+use pallet_octopus_lpos::{EraIndex, ExposureOf, FilterHistoricalOffences};
 use pallet_session::{historical as pallet_session_historical, FindAccountFromAuthorIndex};
 use pallet_session_historical::NoteHistoricalRoot;
 use pallet_transaction_payment::{ChargeTransactionPayment, CurrencyAdapter};
@@ -124,12 +124,10 @@ mod benches {
 		[hospitals, Hospitals]
 		[doctors, Doctors]
 		[genetic_data, GeneticData]
-		[electronic_medical_record, ElectronicMedicalRecord]
-		[hospitals, Hospitals]
-		[doctors, Doctors]
+		[menstrual_calendar, MenstrualCalendar]
+		[menstrual_subscription, MenstrualSubscription]
 		[user_profile, UserProfile]
 		[rewards, Rewards]
-		[genetic_data, GeneticData]
 		[labs_benchmarking, LabsBench::<Runtime>]
 		[services_benchmarking, ServicesBench::<Runtime>]
 		[certifications_benchmarking, CertificationsBench::<Runtime>]
@@ -204,7 +202,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 2014,
+	spec_version: 2015,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -418,8 +416,11 @@ impl pallet_babe::Config for Runtime {
 	type EpochChangeTrigger = ExternalTrigger;
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
-	type HandleEquivocation =
-		BabeEquivocationHandler<Self::KeyOwnerIdentification, (), ReportLongevity>;
+	type HandleEquivocation = BabeEquivocationHandler<
+		Self::KeyOwnerIdentification,
+		FilterHistoricalOffences<OctopusLpos, Offences>,
+		ReportLongevity,
+	>;
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
 		BabeId,
@@ -617,11 +618,20 @@ impl pallet_session::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_offences::Config for Runtime {
+	type Event = Event;
+	type IdentificationTuple = pallet_session_historical::IdentificationTuple<Self>;
+	type OnOffenceHandler = ();
+}
+
 impl pallet_grandpa::Config for Runtime {
 	type Call = Call;
 	type Event = Event;
-	type HandleEquivocation =
-		GrandpaEquivocationHandler<Self::KeyOwnerIdentification, (), ReportLongevity>;
+	type HandleEquivocation = GrandpaEquivocationHandler<
+		Self::KeyOwnerIdentification,
+		FilterHistoricalOffences<OctopusLpos, Offences>,
+		ReportLongevity,
+	>;
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
 		GrandpaId,
@@ -684,7 +694,7 @@ impl pallet_im_online::Config for Runtime {
 	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 	type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
 	type NextSessionRotation = Babe;
-	type ReportUnresponsiveness = ();
+	type ReportUnresponsiveness = FilterHistoricalOffences<OctopusLpos, Offences>;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
 	type ValidatorSet = Historical;
 	type WeightInfo = ();
@@ -775,6 +785,16 @@ impl genetic_testing::Config for Runtime {
 	type GeneticTestingWeightInfo = ();
 }
 
+impl menstrual_calendar::Config for Runtime {
+	type Event = Event;
+	type MenstrualCalendarWeightInfo = ();
+}
+
+impl menstrual_subscription::Config for Runtime {
+	type Event = Event;
+	type MenstrualSubscriptionWeightInfo = ();
+}
+
 impl user_profile::Config for Runtime {
 	type Event = Event;
 	type EthereumAddress = EthereumAddress;
@@ -847,6 +867,7 @@ impl genetic_analysis::Config for Runtime {
 impl genetic_analysis_orders::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+	type Assets = OctopusAssets;
 	type GeneticData = GeneticData;
 	type GeneticAnalysts = GeneticAnalysts;
 	type GeneticAnalysis = GeneticAnalysis;
@@ -876,6 +897,7 @@ construct_runtime!(
 		Authorship: pallet_authorship::{Call, Inherent, Pallet, Storage},
 		Historical: pallet_session_historical::{Pallet},
 		Session: pallet_session::{Call, Event, Config<T>, Pallet, Storage},
+		Offences: pallet_offences::{Event, Pallet, Storage},
 		Grandpa: pallet_grandpa::{Call, Config, Event, Pallet, Storage, ValidateUnsigned},
 		Beefy: pallet_beefy::{Config<T>, Pallet, Storage},
 		MmrLeaf: pallet_beefy_mmr::{Pallet, Storage},
@@ -890,6 +912,8 @@ construct_runtime!(
 		Rewards: rewards::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Orders: orders::{Pallet, Call, Storage, Config<T>, Event<T>},
 		GeneticTesting: genetic_testing::{Pallet, Call, Storage, Event<T>},
+		MenstrualCalendar: menstrual_calendar::{Pallet, Call, Storage, Event<T>},
+		MenstrualSubscription: menstrual_subscription::{Pallet, Call, Storage, Config<T>, Event<T>},
 		UserProfile: user_profile::{Pallet, Call, Storage, Config<T>, Event<T>},
 		ElectronicMedicalRecord: electronic_medical_record::{Pallet, Call, Storage, Event<T>},
 		Certifications: certifications::{Pallet, Call, Storage, Event<T>},

@@ -1,21 +1,27 @@
 use crate::{
-	AccountIdOf, BalanceOf, Config, HashOf, Lab, LabInfo, Labs, MomentOf, Pallet, Vec, Weight,
+	AccountIdOf, BalanceOf, Config, HashOf, Lab, LabInfo, Labs, MomentOf, Pallet, PalletAccount,
+	Vec, Weight,
 };
-use frame_support::traits::Get;
+use frame_support::{pallet_prelude::Decode, traits::Get};
 use primitives_stake_status::StakeStatus;
 use primitives_verification_status::VerificationStatus;
-
-use frame_support::pallet_prelude::Decode;
 
 pub fn migrate<T: Config>() -> Weight {
 	use frame_support::traits::StorageVersion;
 
-	let version = StorageVersion::get::<Pallet<T>>();
+	let mut version = StorageVersion::get::<Pallet<T>>();
 	let mut weight: Weight = 0;
 
 	if version < 2 {
 		weight = weight.saturating_add(v2::migrate::<T>());
 		StorageVersion::new(2).put::<Pallet<T>>();
+	}
+
+	version = StorageVersion::get::<Pallet<T>>();
+
+	if version == 2 {
+		weight = weight.saturating_add(v3::migrate::<T>());
+		StorageVersion::new(3).put::<Pallet<T>>();
 	}
 
 	weight
@@ -55,5 +61,15 @@ mod v2 {
 		});
 
 		weight
+	}
+}
+
+mod v3 {
+	use super::*;
+
+	pub fn migrate<T: Config>() -> Weight {
+		PalletAccount::<T>::put(<Pallet<T>>::get_pallet_id());
+
+		T::DbWeight::get().writes(1)
 	}
 }
